@@ -55,7 +55,7 @@ else:
       let capacity_value = CFDictionaryGetValue(source_description, current_capacity_cfstr)
       var battery: cint
       CFNumberGetValue(capacity_value, 9'i64, addr battery) 
-      echo(repr(battery) & "%")
+      echo(repr(battery))
     index += 1
 CFRelease(sources)
 CFRelease(blob)
