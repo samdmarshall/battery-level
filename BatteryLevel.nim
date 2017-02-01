@@ -26,6 +26,7 @@ proc CFRelease(item: CFTypeRef): void {.importc.}
 # Entry Point
 # ===========
 
+var get_charging_status = false
 var passed_index: cint = -1
 for kind, key, value in parseopt2.getopt():
   case kind
@@ -34,6 +35,8 @@ for kind, key, value in parseopt2.getopt():
     of "index", "i":
       if value.len > 0:
         passed_index = cast[cint](strutils.parseInt(value))
+    of "charging", "c":
+      get_charging_status = true 
     of "default", "d":
       passed_index = 0
     else: discard
@@ -51,11 +54,18 @@ else:
     if passed_index == index:
       let source = CFArrayGetValueAtIndex(sources, index)
       let source_description = IOPSGetPowerSourceDescription(blob, source)
-      let current_capacity_cfstr = CFStringCreateWithCString(nil, "Current Capacity", 0x08000100'i64)
-      let capacity_value = CFDictionaryGetValue(source_description, current_capacity_cfstr)
-      var battery: cint
-      CFNumberGetValue(capacity_value, 9'i64, addr battery) 
-      echo(repr(battery))
+      if get_charging_status:
+        let current_capacity_cfstr = CFStringCreateWithCString(nil, "Is Charging", 0x08000100'i64)
+        let charging_value = CFDictionaryGetValue(source_description, current_capacity_cfstr)
+        var charging_status: cint
+        CFNumberGetValue(charging_value, 9'i64, addr charging_status) 
+        echo(repr(charging_status))
+      else:
+        let current_capacity_cfstr = CFStringCreateWithCString(nil, "Current Capacity", 0x08000100'i64)
+        let capacity_value = CFDictionaryGetValue(source_description, current_capacity_cfstr)
+        var battery: cint
+        CFNumberGetValue(capacity_value, 9'i64, addr battery) 
+        echo(repr(battery))
     index += 1
 CFRelease(sources)
 CFRelease(blob)
