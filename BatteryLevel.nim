@@ -54,18 +54,16 @@ else:
     if passed_index == index:
       let source = CFArrayGetValueAtIndex(sources, index)
       let source_description = IOPSGetPowerSourceDescription(blob, source)
+      var key_string: cstring
       if get_charging_status:
-        let current_capacity_cfstr = CFStringCreateWithCString(nil, "Is Charging", 0x08000100'i64)
-        let charging_value = CFDictionaryGetValue(source_description, current_capacity_cfstr)
-        var charging_status: cint
-        CFNumberGetValue(charging_value, 9'i64, addr charging_status) 
-        echo(repr(charging_status))
+        key_string = "Is Charging"
       else:
-        let current_capacity_cfstr = CFStringCreateWithCString(nil, "Current Capacity", 0x08000100'i64)
-        let capacity_value = CFDictionaryGetValue(source_description, current_capacity_cfstr)
-        var battery: cint
-        CFNumberGetValue(capacity_value, 9'i64, addr battery) 
-        echo(repr(battery))
+        key_string = "Current Capacity"
+      let key_cfstr = CFStringCreateWithCString(nil, key_string, 0x08000100'i64)
+      let value_cftype = CFDictionaryGetValue(source_description, key_cfstr)
+      var real_value: cint
+      CFNumberGetValue(value_cftype, 9'i64, addr real_value) 
+      echo(repr(real_value))
     index += 1
 CFRelease(sources)
 CFRelease(blob)
