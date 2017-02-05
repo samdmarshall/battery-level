@@ -26,6 +26,7 @@ proc CFRelease(item: CFTypeRef): void {.importc.}
 # Entry Point
 # ===========
 
+var show_sources = false
 var get_charging_status = false
 var passed_index: cint = -1
 for kind, key, value in parseopt2.getopt():
@@ -39,6 +40,8 @@ for kind, key, value in parseopt2.getopt():
       get_charging_status = true 
     of "default", "d":
       passed_index = 0
+    of "list", "l":
+      show_sources = true
     else: discard
   else: discard
 
@@ -47,7 +50,9 @@ let sources = IOPSCopyPowerSourcesList(blob)
 var index: cint = 0
 let source_array_length = CFArrayGetCount(sources)
 
-if passed_index == -1:
+if show_sources:
+  echo(repr(source_array_length))
+elif passed_index == -1:
   echo(repr(source_array_length) & " source(s)")
 else:
   while index < source_array_length:
