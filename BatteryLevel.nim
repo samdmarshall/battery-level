@@ -37,7 +37,7 @@ proc usage(): void =
   quit(QuitSuccess)
 
 proc versionInfo(): void =
-  echo(progName() & " v0.4")
+  echo(progName() & " v0.4.1")
   quit(QuitSuccess)
 
 # ===========
