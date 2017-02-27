@@ -1,3 +1,4 @@
+import os
 import strutils
 import parseopt2
 
@@ -22,6 +23,23 @@ proc CFNumberGetValue(number: CFTypeRef, num_type: int64, value: ptr cint): void
 
 proc CFRelease(item: CFTypeRef): void {.importc.}
 
+proc progname(): string =
+  result = os.extractFilename(os.getAppFilename())
+
+proc usage(): void =
+  let name = progName()
+  let filler = repeat(" ", name.len)
+  echo(name   & " [--version|-v]")
+  echo(filler & " [--help|-h]")
+  echo(filler & " [--list|-l]")
+  echo(filler & " [--index:# | -i:# ] [--charging|-c]")
+  echo(filler & " [--default|-d] [--charging|-c]")
+  quit(QuitSuccess)
+
+proc versionInfo(): void =
+  echo(progName() & " v0.1")
+  quit(QuitSuccess)
+
 # ===========
 # Entry Point
 # ===========
@@ -42,8 +60,14 @@ for kind, key, value in parseopt2.getopt():
       passed_index = 0
     of "list", "l":
       show_sources = true
-    else: discard
-  else: discard
+    of "help", "h":
+      usage()
+    of "version", "v":
+      versionInfo()
+    else:
+      discard
+  else:
+    discard
 
 let blob = IOPSCopyPowerSourcesInfo()
 let sources = IOPSCopyPowerSourcesList(blob)
@@ -51,9 +75,9 @@ var index: cint = 0
 let source_array_length = CFArrayGetCount(sources)
 
 if show_sources:
-  echo(repr(source_array_length))
+  echo(repr(source_array_length) & "source(s), this is 0-indexed (first source is index 0, second is 1, etc)")
 elif passed_index == -1:
-  echo(repr(source_array_length) & " source(s)")
+  usage()
 else:
   while index < source_array_length:
     if passed_index == index:
