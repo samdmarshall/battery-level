@@ -31,7 +31,7 @@ proc usage(): void =
   let filler = repeat(" ", name.len)
   echo(name   & " [--version|-v]")
   echo(filler & " [--help|-h]")
-  echo(filler & " [--list|-l]")
+  echo(filler & " [--list|-l] (this is 0-indexed; first source is index 0, second is 1, etc)")
   echo(filler & " [--index:# | -i:# ] [--charging|-c]")
   echo(filler & " [--default|-d] [--charging|-c]")
   quit(QuitSuccess)
@@ -75,7 +75,7 @@ var index: cint = 0
 let source_array_length = CFArrayGetCount(sources)
 
 if show_sources:
-  echo(repr(source_array_length) & "source(s), this is 0-indexed (first source is index 0, second is 1, etc)")
+  echo(repr(source_array_length))
 elif passed_index == -1:
   usage()
 else:
