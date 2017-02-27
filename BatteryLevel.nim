@@ -75,7 +75,7 @@ var index: cint = 0
 let source_array_length = CFArrayGetCount(sources)
 
 if show_sources:
-  echo(repr(source_array_length))
+  echo(repr(source_array_length) & "source(s), this is 0-indexed (first source is index 0, second is 1, etc)")
 elif passed_index == -1:
   usage()
 else:
