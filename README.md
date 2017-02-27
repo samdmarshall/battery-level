@@ -49,6 +49,6 @@ You can put the following in your `~/.bashrc`
     
     export PS1="\$(prompt_battery) \d \@ \w $ "
 
-And, if the batter is charging, your prompt will look like
+And, if the battery is charging, your prompt will look like
 
     ⚡️  Mon Feb 27 10:18 AM ~/Development/battery-level $
