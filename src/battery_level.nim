@@ -78,13 +78,26 @@ when defined(macosx):
       index += 1
   CFRelease(sources)
   CFRelease(blob)
-
-var file: File
-if open(file, "/sys/class/power_supply/battery/capacity"):
-  try:
-    let charge = readLine(file)
-    echo $charge
-  except:
-    echo("failed to open file :(")
-  finally:
-    close(file)
+else:
+  var file: File
+  if get_charging_status:
+    if open(file, "/sys/class/power_supply/battery/status"):
+      try:
+        let state = readLine(file)
+        if state == "Charging":
+          echo("1")
+        else:
+          echo("0")
+      except:
+        echo("failed to open file :(")
+      finally:
+        close(file)
+  else:
+    if open(file, "/sys/class/power_supply/battery/capacity"):
+      try:
+        let charge = readLine(file)
+        echo $charge
+      except:
+        echo("failed to open file :(")
+      finally:
+        close(file)
