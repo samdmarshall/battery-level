@@ -3,22 +3,22 @@
 # =======
 
 import os
-import osproc
 import hashes
 import tables
-import distros
-import streams
+import macros
 import parseopt
+import sequtils
 import strutils
+import terminal
 
 import "protocol.nim"
 
-when detectOs(Linux):
-  import "linux.nim"
-when detectOs(Windows):
+when defined(windows):
   import "windows.nim"
-when detectOs(MacOSX):
+when defined(macosx):
   import "macosx.nim"
+when defined(linux):
+  import "linux.nim"
 
 # =====
 # Types
@@ -56,7 +56,8 @@ for kind, key, value in parser.getopt():
     except: discard
   else: discard
 
-for key in state.keys():
+let commands = toSeq(state.keys())
+for key in commands:
   case key
   of Version:
     echo(AppName & " v" & AppVersion)
@@ -65,7 +66,7 @@ for key in state.keys():
     echo(AppName & "\n" &
       "\t -v  , --version  Display Version \n" &
       "\t -h  , --help     Display Help and Usage \n" &
-      "\t -l  , --list     List available batteries \n" &
+      "\t -l  , --list     List number of batteries \n" &
       "\t -d  , --default  Use the first/default battery \n" &
       "\t -s  , --status   Display charging status \n" &
       "\t -c  , --color    Apply color+text styling to output \n" &
@@ -78,9 +79,30 @@ for key in state.keys():
     let use_color = state.hasKey(Color)
     let show_status = state.hasKey(Status)
     let batteries = getBatteries()
-    if List in index:
-      outputHandle.write($batteries.len)
+    if List in commands:
+      var counter = 0
+      for batt in batteries:
+        stdout.write("#" & $counter & " : " & $batt.percentage & "\n")
+        inc(counter)
+      break
     else:
       let index = state[Index].parseInt()
       let battery = batteries[index]
-      outputHandle.write(battery.percentage)
+
+      stdout.write("[")
+      if use_color:
+        let color =
+          if (0..25).contains(battery.percentage): fgRed
+          elif (25..75).contains(battery.percentage): fgYellow
+          else: fgGreen
+        stdout.setForegroundColor(color)
+        if battery.percentage >= 75 or battery.percentage <= 10:
+          stdout.setStyle({styleBright})
+      if show_status:
+        if battery.isCharging:
+          stdout.setStyle({styleUnderscore})
+      stdout.write($battery.percentage & "%")
+      if use_color:
+        stdout.resetAttributes()
+      stdout.write("]")
+    break

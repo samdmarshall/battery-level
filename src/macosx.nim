@@ -1,4 +1,6 @@
 
+import "protocol.nim"
+
 {.passL: "-framework IOKit -framework CoreFoundation".}
 
 type
@@ -20,31 +22,30 @@ proc CFNumberGetValue(number: CFTypeRef, num_type: int64, value: ptr cint): void
 
 proc CFRelease(item: CFTypeRef): void {.importc.}
 
-
-let blob = IOPSCopyPowerSourcesInfo()
-let sources = IOPSCopyPowerSourcesList(blob)
-var index: cint = 0
-let source_array_length = CFArrayGetCount(sources)
-
-if show_sources:
-  echo(repr(source_array_length))
-elif  passed_index == -1:
-  usage()
-else:
+proc getBatteries*(): seq[Battery] =
+  result = newSeq[Battery]()
+  let blob = IOPSCopyPowerSourcesInfo()
+  let sources = IOPSCopyPowerSourcesList(blob)
+  var index: cint = 0
+  let source_array_length = CFArrayGetCount(sources)
   while index < source_array_length:
-    if passed_index == index:
-      let source = CFArrayGetValueAtIndex(sources, index)
-      let source_description = IOPSGetPowerSourceDescription(blob, source)
-      var key_string: cstring
-      if get_charging_status:
-        key_string = "Is Charging"
-      else:
-        key_string = "Current Capacity"
-        let key_cfstr = CFStringCreateWithCString(nil, key_string, 0x08000100'i64)
-        let value_cftype = CFDictionaryGetValue(source_description, key_cfstr)
-        var real_value: cint
-        CFNumberGetValue(value_cftype, 9'i64, addr real_value) 
-        echo(repr(real_value))
-        index += 1
-        CFRelease(sources)
-        CFRelease(blob)
+    let source = CFArrayGetValueAtIndex(sources, index)
+    let source_description = IOPSGetPowerSourceDescription(blob, source)
+      if get_charging_status: "Is Charging"
+
+    let percentage_cfstr = CFStringCreateWithCString(nil, "Current Capacity", 0x08000100'i64)
+    let percentage_value_cftype = CFDictionaryGetValue(source_description, percentage_cfstr)
+    var percentage_real_value: cint
+    CFNumberGetValue(percentage_value_cftype, 9'i64, addr percentage_real_value)
+
+    let status_cfstr = CFStringCreateWithCString(nil, "Is Charging", 0x08000100'i64)
+    let status_value_cftype = CFDictionaryGetValue(source_description, status_cfstr)
+    var status_read_value: cint
+    CFNumberGetValue(status_value_cftype, 9'i64, addr status_read_value)
+
+    let batt = Battery(percentage: percentage_real_value, isCharging: status_real_value == 1)
+    result.add(batt)
+
+    inc(index)
+  CFRelease(sources)
+  CFRelease(blob)
