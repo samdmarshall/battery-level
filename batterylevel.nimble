@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.5.0"
+version       = "0.5.1"
 author        = "Samantha Demi"
 description   = "utility for checking current battery level on a system"
 license       = "BSD-3-Clause"

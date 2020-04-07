@@ -23,7 +23,7 @@ proc getBatteries*(): seq[Battery] =
     of "Battery":
       let percentage = readAll(entry / "capacity").parseInt()
       let state = readAll(entry / "status")
-      if (percentage > 0 and percentage <= 100) and (state.len > 0):
+      if (percentage >= 0 and percentage <= 100) and (state.len > 0):
         let batt = Battery(percentage: percentage, isCharging: (state == "Charging"))
         result.add(batt)
     else: discard
