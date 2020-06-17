@@ -31,7 +31,7 @@ proc getBatteries*(): seq[Battery] =
   while index < source_array_length:
     let source = CFArrayGetValueAtIndex(sources, index)
     let source_description = IOPSGetPowerSourceDescription(blob, source)
-      if get_charging_status: "Is Charging"
+#   if get_charging_status: "Is Charging"
 
     let percentage_cfstr = CFStringCreateWithCString(nil, "Current Capacity", 0x08000100'i64)
     let percentage_value_cftype = CFDictionaryGetValue(source_description, percentage_cfstr)
@@ -40,8 +40,8 @@ proc getBatteries*(): seq[Battery] =
 
     let status_cfstr = CFStringCreateWithCString(nil, "Is Charging", 0x08000100'i64)
     let status_value_cftype = CFDictionaryGetValue(source_description, status_cfstr)
-    var status_read_value: cint
-    CFNumberGetValue(status_value_cftype, 9'i64, addr status_read_value)
+    var status_real_value: cint
+    CFNumberGetValue(status_value_cftype, 9'i64, addr status_real_value)
 
     let batt = Battery(percentage: percentage_real_value, isCharging: status_real_value == 1)
     result.add(batt)
